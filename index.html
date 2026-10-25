@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pl" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SatsumaOS — Wydajność Arch Linuksa. Prostota Nowej Generacji.</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        satsuma: {
+                            50: '#fff8f0',
+                            100: '#ffeedb',
+                            200: '#ffd6b3',
+                            300: '#ffb57a',
+                            400: '#ff8c3b',
+                            500: '#ff6600', // Core Satsuma Orange
+                            600: '#f04e00',
+                            700: '#c73800',
+                            800: '#9e2d08',
+                            900: '#7f280c',
+                        },
+                        dark: {
+                            bg: '#07080c',
+                            surface: '#0d0f17',
+                            card: '#131624',
+                            cardHover: '#1a1e30',
+                            border: 'rgba(255, 255, 255, 0.07)',
+                            borderGlow: 'rgba(255, 102, 0, 0.35)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    boxShadow: {
+                        'satsuma-glow': '0 0 40px -5px rgba(255, 102, 0, 0.35)',
+                        'satsuma-glow-lg': '0 0 70px -10px rgba(255, 102, 0, 0.55)',
+                        'glass-card': '0 20px 50px rgba(0, 0, 0, 0.5)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float-slow': 'float 7s ease-in-out infinite',
+                        'glow-pulse': 'glowPulse 3s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        },
+                        glowPulse: {
+                            '0%': { opacity: '0.4', transform: 'scale(1)' },
+                            '100%': { opacity: '0.75', transform: 'scale(1.08)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #07080c;
+            color: #f3f4f6;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Styles */
+        .glass-nav {
+            background: rgba(13, 15, 23, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: linear-gradient(135deg, rgba(25, 30, 48, 0.4) 0%, rgba(13, 15, 23, 0.6) 100%);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 102, 0, 0.45);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px -15px rgba(255, 102, 0, 0.2);
+        }
+
+        .gradient-text-satsuma {
+            background: linear-gradient(135deg, #ffffff 0%, #ffc091 35%, #ff6600 85%, #f04e00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gradient-text-gold {
+            background: linear-gradient(135deg, #fff7ed 0%, #ff8c3b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #07080c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1c2135;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff6600;
+        }
+
+        /* Subtle grid background pattern */
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="selection:bg-satsuma-500 selection:text-white bg-grid-pattern">
+
+    <!-- HARDCODED GOFILE / DOWNLOAD LINK HERE -->
+    <script>
+        const SATSUMA_DOWNLOAD_URL = "https://gofile.io/"; // Zmień ten link bezpośrednio w kodzie!
+    </script>
+
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 z-50 glass-nav py-4 px-6">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            
+            <!-- Brand Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="relative flex items-center justify-center">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-satsuma-500 to-amber-500 rounded-xl blur-md opacity-70 group-hover:opacity-100 transition duration-300"></div>
+                    <div class="relative w-10 h-10 rounded-xl bg-dark-bg border border-satsuma-500/40 flex items-center justify-center text-xl group-hover:scale-105 transition duration-300">
+                        🍊
+                    </div>
+                </div>
+                <div>
+                    <span class="text-2xl font-extrabold tracking-tight text-white flex items-center">
+                        Satsuma<span class="text-satsuma-500">OS</span>
+                    </span>
+                    <span class="block text-[10px] font-mono text-gray-400 tracking-widest uppercase -mt-1">Arch • KDE Plasma</span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
+                <a href="#about" class="hover:text-satsuma-400 transition">O systemie</a>
+                <a href="#features" class="hover:text-satsuma-400 transition">Funkcje</a>
+                <a href="#installation" class="hover:text-satsuma-400 transition">Instalacja</a>
+                <a href="#faq" class="hover:text-satsuma-400 transition">FAQ</a>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="flex items-center gap-3">
+                <a href="https://github.com" target="_blank" class="p-2.5 rounded-xl glass-card hover:bg-white/10 text-gray-300 transition" title="GitHub Repository">
+                    <i data-lucide="github" class="w-5 h-5"></i>
+                </a>
+                <a href="javascript:void(0)" onclick="window.open(SATSUMA_DOWNLOAD_URL, '_blank')" class="relative group overflow-hidden rounded-xl bg-gradient-to-r from-satsuma-600 via-satsuma-500 to-amber-500 p-px font-semibold text-white shadow-satsuma-glow hover:shadow-satsuma-glow-lg transition duration-300">
+                    <span class="flex items-center gap-2 px-5 py-2.5 rounded-[11px] bg-dark-bg/60 group-hover:bg-transparent transition duration-300 text-sm font-bold">
+                        <i data-lucide="download" class="w-4 h-4 text-satsuma-400 group-hover:text-white transition"></i>
+                        <span>Pobierz OS</span>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="about" class="relative pt-20 pb-32 px-6 overflow-hidden">
+        
+        <!-- Ambient Glowing Background Orbs -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-satsuma-500/15 rounded-full blur-[150px] pointer-events-none animate-glow-pulse"></div>
+        <div class="absolute top-1/3 right-10 w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center relative z-10">
+            
+            <!-- Left Column: Copy & Actions -->
+            <div class="lg:col-span-7 space-y-8 text-center lg:text-left">
+                
+                <!-- Status Pill -->
+                <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-card border-satsuma-500/30 text-xs font-semibold text-satsuma-300">
+                    <span class="w-2.5 h-2.5 rounded-full bg-satsuma-500 animate-ping"></span>
+                    <span class="font-mono">SATSUMAOS v1.0 • ARCH LINUX BASED</span>
+                    <i data-lucide="sparkles" class="w-4 h-4 text-satsuma-400"></i>
+                </div>
+
+                <!-- Main Hero Heading -->
+                <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08]">
+                    SatsumaOS — Wydajność Arch Linuksa. <br>
+                    <span class="gradient-text-satsuma">Prostota Nowej Generacji.</span>
+                </h1>
+
+                <!-- Subtitle -->
+                <p class="text-lg sm:text-xl text-gray-300 max-w-2xl font-normal leading-relaxed mx-auto lg:mx-0">
+                    Skompilowany i dostrojony system z środowiskiem <strong>KDE Plasma 6</strong>. Wgraj na dysk w obudowie USB, zamontuj w dowolnym komputerze i ciesz się natychmiastowym działaniem z automatycznym powiększaniem partycji.
+                </p>
+
+                <!-- Primary CTA Group -->
+                <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+                    <a href="javascript:void(0)" onclick="window.open(SATSUMA_DOWNLOAD_URL, '_blank')" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-satsuma-600 via-satsuma-500 to-amber-500 text-white font-extrabold text-lg shadow-satsuma-glow hover:shadow-satsuma-glow-lg transition duration-300 transform hover:-translate-y-1 flex items-center justify-center gap-3 group">
+                        <i data-lucide="download-cloud" class="w-6 h-6 group-hover:scale-110 transition"></i>
+                        <span>Pobierz Teraz (SatsumaOS v1.0)</span>
+                    </a>
+
+                    <a href="#installation" class="w-full sm:w-auto px-7 py-4 rounded-2xl glass-card hover:bg-white/10 text-gray-200 font-semibold text-base flex items-center justify-center gap-2 border border-white/10 transition">
+                        <i data-lucide="compass" class="w-5 h-5 text-satsuma-400"></i>
+                        <span>Zobacz Przewodnik</span>
+                    </a>
+                </div>
+
+                <!-- Feature Badges -->
+                <div class="pt-8 border-t border-white/10 grid grid-cols-3 gap-4 text-center lg:text-left max-w-lg mx-auto lg:mx-0">
+                    <div>
+                        <div class="text-2xl font-extrabold text-white font-mono">100%</div>
+                        <div class="text-xs text-gray-400 mt-0.5">Auto-Resize Dysku</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-extrabold text-satsuma-400 font-mono">KDE 6</div>
+                        <div class="text-xs text-gray-400 mt-0.5">Plasma + Plymouth</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-extrabold text-white font-mono">AUR</div>
+                        <div class="text-xs text-gray-400 mt-0.5">Menedżer Pacman & Yay</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: OS Desktop UI & Terminal Mockup -->
+            <div class="lg:col-span-5 relative">
+                <div class="relative mx-auto max-w-md lg:max-w-none">
+                    
+                    <!-- Glow Behind Mockup -->
+                    <div class="absolute -inset-2 bg-gradient-to-r from-satsuma-500 to-amber-500 rounded-3xl blur-2xl opacity-40"></div>
+
+                    <!-- Main Screen Container -->
+                    <div class="relative rounded-3xl bg-dark-card border border-white/15 shadow-glass-card overflow-hidden">
+                        
+                        <!-- Top OS Title Bar -->
+                        <div class="px-4 py-3 bg-dark-surface border-b border-white/10 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+                                <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+                                <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
+                            </div>
+                            <span class="text-xs font-mono text-gray-400 font-medium">satsumapl@satsumaos ~ KDE Plasma</span>
+                            <div class="flex items-center gap-2 text-gray-500">
+                                <i data-lucide="wifi" class="w-3.5 h-3.5 text-satsuma-400"></i>
+                                <i data-lucide="battery-charging" class="w-3.5 h-3.5 text-green-400"></i>
+                            </div>
+                        </div>
+
+                        <!-- Simulated Plasma Desktop / Terminal View -->
+                        <div class="p-6 bg-dark-bg/95 font-mono text-xs space-y-4 min-h-[360px] relative">
+                            
+                            <!-- System Fetch Output -->
+                            <div class="flex items-start gap-4">
+                                <div class="text-satsuma-500 font-bold text-4xl select-none leading-none pt-1">
+                                    🍊
+                                </div>
+                                <div class="space-y-1 text-gray-300 text-[11px] leading-relaxed">
+                                    <div class="text-satsuma-400 font-bold text-xs">satsumapl<span class="text-white">@</span>satsumaos</div>
+                                    <div class="text-gray-600">----------------------------</div>
+                                    <div><span class="text-satsuma-400 font-semibold">OS:</span> SatsumaOS x86_64 (Arch Linux)</div>
+                                    <div><span class="text-satsuma-400 font-semibold">Kernel:</span> 6.12.8-arch1-1</div>
+                                    <div><span class="text-satsuma-400 font-semibold">Desktop:</span> KDE Plasma 6.2.4</div>
+                                    <div><span class="text-satsuma-400 font-semibold">Theme:</span> Satsuma Dark Glass</div>
+                                    <div><span class="text-satsuma-400 font-semibold">Packages:</span> 890 (pacman), yay</div>
+                                    <div><span class="text-satsuma-400 font-semibold">Bootloader:</span> Syslinux + Plymouth Splash</div>
+                                </div>
+                            </div>
+
+                            <!-- Auto-Resize Log Highlight Box -->
+                            <div class="p-3.5 rounded-xl bg-satsuma-500/10 border border-satsuma-500/30 text-[11px] space-y-1">
+                                <div class="text-satsuma-300 font-bold flex items-center gap-1.5">
+                                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-satsuma-400"></i>
+                                    <span>[SYSTEMD] resize-rootfs.service</span>
+                                </div>
+                                <div class="text-gray-300">Wykryto nową pojemność SSD (NVMe / SATA).</div>
+                                <div class="text-emerald-400 font-semibold">Partycja root została automatycznie rozszerzona do 100%!</div>
+                            </div>
+
+                            <!-- Terminal Prompt -->
+                            <div class="pt-2 flex items-center gap-2 text-gray-200">
+                                <span class="text-satsuma-500 font-bold">[satsumapl@satsumaos ~]$</span>
+                                <span class="text-gray-300">fastfetch</span>
+                                <span class="w-2 h-4 bg-satsuma-400 inline-block animate-pulse"></span>
+                            </div>
+
+                        </div>
+
+                        <!-- Floating Accent Badge -->
+                        <div class="px-5 py-3 bg-dark-surface/90 border-t border-white/10 flex items-center justify-between text-xs">
+                            <span class="text-gray-400 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                Status: Ready for NVMe/SATA
+                            </span>
+                            <span class="font-mono text-satsuma-400 font-bold">Default Pass: 1234</span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Key Features Grid -->
+    <section id="features" class="py-24 px-6 relative">
+        <div class="max-w-7xl mx-auto">
+            
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-xs font-mono text-satsuma-400 font-bold uppercase tracking-widest">Perfekcja w każdym detalu</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white mt-2">Dlaczego SatsumaOS?</h2>
+                <p class="text-gray-400 mt-4 text-base">Przemyślana architektura bez zbędnego balastu systemowego.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Feature Card 1 -->
+                <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
+                    <div class="w-14 h-14 rounded-2xl bg-satsuma-500/10 border border-satsuma-500/30 flex items-center justify-center text-satsuma-400 mb-6 group-hover:scale-110 transition duration-300">
+                        <i data-lucide="hard-drive" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Gotowy do Flashowania</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Wgraj czysty obraz na zewnętrzny dysk SSD w kieszeni USB Enclosure za pomocą BalenaEtcher lub Rufus. Przełóż dysk bezpośrednio do komputera docelowego i uruchom system.
+                    </p>
+                </div>
+
+                <!-- Feature Card 2 -->
+                <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
+                    <div class="w-14 h-14 rounded-2xl bg-satsuma-500/10 border border-satsuma-500/30 flex items-center justify-center text-satsuma-400 mb-6 group-hover:scale-110 transition duration-300">
+                        <i data-lucide="maximize-2" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Auto-Resize Disk</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Autorski skrypt uruchamiany przy pierwszym starcie wykrywa rozmiar nośnika (np. 500 GB, 1 TB, 2 TB) i automatycznie rozszerza partycję główną do 100% pojemności dysku.
+                    </p>
+                </div>
+
+                <!-- Feature Card 3 -->
+                <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
+                    <div class="w-14 h-14 rounded-2xl bg-satsuma-500/10 border border-satsuma-500/30 flex items-center justify-center text-satsuma-400 mb-6 group-hover:scale-110 transition duration-300">
+                        <i data-lucide="monitor" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">KDE Plasma 6 & Ciemny Motyw</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Lekkie, zaawansowane środowisko graficzne z przygotowaną paletą kolorów Satsuma Dark Glass, nowoczesnymi efektami rozmycia oraz zoptymalizowanym zużyciem pamięci RAM.
+                    </p>
+                </div>
+
+                <!-- Feature Card 4 -->
+                <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
+                    <div class="w-14 h-14 rounded-2xl bg-satsuma-500/10 border border-satsuma-500/30 flex items-center justify-center text-satsuma-400 mb-6 group-hover:scale-110 transition duration-300">
+                        <i data-lucide="cpu" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Zbudowany na Arch Linux</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Korzystaj z najnowszych pakietów, jądra Linux, oficjalnych repozytoriów Pacman oraz przeogromnej bazy oprogramowania AUR (Arch User Repository) dzięki zainstalowanemu `yay`.
+                    </p>
+                </div>
+
+                <!-- Feature Card 5 -->
+                <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
+                    <div class="w-14 h-14 rounded-2xl bg-satsuma-500/10 border border-satsuma-500/30 flex items-center justify-center text-satsuma-400 mb-6 group-hover:scale-110 transition duration-300">
+                        <i data-lucide="zap" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Plymouth & Fast Boot</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Bootloader Syslinux zintegrowany z silnikiem grafik Plymouth gwarantuje płynny, cichy i czysty proces uruchamiania bez rozpraszających komunikatów tekstowych.
+                    </p>
+                </div>
+
+                <!-- Feature Card 6 -->
+                <div class="glass-card p-8 rounded-3xl relative overflow-hidden group">
+                    <div class="w-14 h-14 rounded-2xl bg-satsuma-500/10 border border-satsuma-500/30 flex items-center justify-center text-satsuma-400 mb-6 group-hover:scale-110 transition duration-300">
+                        <i data-lucide="shield-check" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Gotowy dla Deweloperów</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Preinstalowane pakiety `base-devel`, Git, Python, narzędzia dyskowe oraz przeglądarka Firefox — gotowe do pracy zaraz po pierwszym zalogowaniu.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Installation Guide Section -->
+    <section id="installation" class="py-24 px-6 bg-dark-surface/60 border-y border-white/5 relative">
+        <div class="max-w-5xl mx-auto">
+            
+            <div class="text-center mb-14">
+                <span class="text-xs font-mono text-satsuma-400 font-bold uppercase tracking-widest">Przewodnik Krok po Kroku</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white mt-2">Instalacja & Kompilacja</h2>
+                <p class="text-gray-400 mt-3">Wybierz sposób wdrożenia dostosowany do Twoich potrzeb.</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex justify-center mb-12">
+                <div class="inline-flex p-1.5 rounded-2xl bg-dark-card border border-white/10">
+                    <button onclick="switchTab('quick')" id="btnTabQuick" class="px-6 py-3 rounded-xl font-bold text-sm transition bg-satsuma-500 text-white shadow-satsuma-glow">
+                        <i data-lucide="flash" class="w-4 h-4 inline-block mr-2"></i>Szybka Instalacja (USB / SSD)
+                    </button>
+                    <button onclick="switchTab('source')" id="btnTabSource" class="px-6 py-3 rounded-xl font-bold text-sm text-gray-400 hover:text-white transition">
+                        <i data-lucide="code" class="w-4 h-4 inline-block mr-2"></i>Kompilacja ze Źródeł
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 1: Quick Flash Guide -->
+            <div id="tabQuickContent" class="space-y-6">
+                
+                <!-- Step 1 -->
+                <div class="glass-card p-8 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start gap-6">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-satsuma-600 to-amber-500 flex items-center justify-center text-white font-extrabold text-xl shrink-0 shadow-satsuma-glow">
+                        01
+                    </div>
+                    <div class="space-y-2 flex-1">
+                        <h3 class="text-2xl font-bold text-white">Pobierz i Rozpakuj Obraz</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed">
+                            Pobierz spakowany plik obrazu systemowego SatsumaOS. Rozpakuj archiwum za pomocą programu <strong>7-Zip</strong> (Windows) lub polecenia w terminalu Linux/macOS, aby uzyskać surowy plik <code class="text-satsuma-400 font-mono">disk.img</code>.
+                        </p>
+                        <div class="pt-2">
+                            <div class="bg-dark-bg p-3 rounded-xl border border-white/5 font-mono text-xs text-gray-300 flex items-center justify-between">
+                                <code>unxz satsumaOS-v1.img.xz</code>
+                                <button onclick="copyCode(this, 'unxz satsumaOS-v1.img.xz')" class="text-gray-500 hover:text-satsuma-400 transition"><i data-lucide="copy" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="glass-card p-8 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start gap-6">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-satsuma-600 to-amber-500 flex items-center justify-center text-white font-extrabold text-xl shrink-0 shadow-satsuma-glow">
+                        02
+                    </div>
+                    <div class="space-y-2 flex-1">
+                        <h3 class="text-2xl font-bold text-white">Sflashuj Dysk SSD w Obudowie USB</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed">
+                            Podłącz docelowy dysk SSD włożony do obudowy USB Enclosure. Uruchom program <strong>BalenaEtcher</strong> lub <strong>Rufus</strong>, wskaż plik <code class="text-satsuma-400 font-mono">disk.img</code> i rozpocznij proces wgrywania.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="glass-card p-8 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start gap-6">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-satsuma-600 to-amber-500 flex items-center justify-center text-white font-extrabold text-xl shrink-0 shadow-satsuma-glow">
+                        03
+                    </div>
+                    <div class="space-y-2 flex-1">
+                        <h3 class="text-2xl font-bold text-white">Przełóż Dysk do Komputera Docelowego</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed">
+                            Po zakończeniu flashowania wyjmij dysk z obudowy USB i zamontuj go bezpośrednio w komputerze docelowym (jako dysk NVMe lub SATA).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="glass-card p-8 rounded-3xl border border-white/10 flex flex-col md:flex-row items-start gap-6">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-satsuma-600 to-amber-500 flex items-center justify-center text-white font-extrabold text-xl shrink-0 shadow-satsuma-glow">
+                        04
+                    </div>
+                    <div class="space-y-2 flex-1">
+                        <h3 class="text-2xl font-bold text-white">Pierwsze Uruchomienie & Auto-Resize</h3>
+                        <p class="text-gray-300 text-sm leading-relaxed">
+                            Włącz komputer. System automatycznie rozszerzy partycję do 100% pojemności dysku w tle. Zaloguj się danymi:
+                        </p>
+                        <div class="flex gap-4 pt-2 font-mono text-xs">
+                            <span class="px-3 py-1.5 rounded-lg bg-satsuma-500/10 border border-satsuma-500/30 text-satsuma-300">Użytkownik: satsumapl</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-satsuma-500/10 border border-satsuma-500/30 text-satsuma-300">Hasło: 1234</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Tab 2: Build From Source Guide -->
+            <div id="tabSourceContent" class="space-y-6 hidden">
+                
+                <div class="p-5 rounded-2xl bg-satsuma-500/10 border border-satsuma-500/30 text-xs text-satsuma-200 flex items-center gap-3">
+                    <i data-lucide="info" class="w-5 h-5 shrink-0 text-satsuma-400"></i>
+                    <span><strong>Wymagania Kompilacji:</strong> Czysty system <strong>Arch Linux</strong> jako host, minimum 4-8 GB RAM oraz co najmniej 30 GB wolnego miejsca na dysku na plik `disk.img`.</span>
+                </div>
+
+                <!-- Step A -->
+                <div class="glass-card p-6 rounded-2xl border border-white/10 space-y-3">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span class="text-satsuma-500 font-mono">1.</span> Instalacja pakietów na hoście & Tworzenie Obrazu
+                    </h3>
+                    <div class="bg-dark-bg p-4 rounded-xl border border-white/5 font-mono text-xs text-gray-300 space-y-2 relative group">
+                        <button onclick="copyCode(this, `sudo pacman -S --needed arch-install-scripts dosfstools e2fsprogs parted syslinux\ndd if=/dev/zero of=disk.img bs=1M count=18432\nparted -s disk.img mklabel gpt\nparted -s disk.img mkpart primary fat32 1MiB 512MiB\nparted -s disk.img mkpart primary ext4 512MiB 100%\nLOOP_DEV=$(sudo losetup --find --show disk.img)\nsudo partprobe \"$LOOP_DEV\"\nsudo mkfs.fat -F32 \"${LOOP_DEV}p1\"\nsudo mkfs.ext4 -F \"${LOOP_DEV}p2\"`)" class="absolute top-3 right-3 text-gray-500 hover:text-satsuma-400">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
+                        <pre><code>sudo pacman -S --needed arch-install-scripts dosfstools e2fsprogs parted syslinux
+dd if=/dev/zero of=disk.img bs=1M count=18432
+parted -s disk.img mklabel gpt
+parted -s disk.img mkpart primary fat32 1MiB 512MiB
+parted -s disk.img mkpart primary ext4 512MiB 100%
+LOOP_DEV=$(sudo losetup --find --show disk.img)
+sudo partprobe "$LOOP_DEV"
+sudo mkfs.fat -F32 "${LOOP_DEV}p1"
+sudo mkfs.ext4 -F "${LOOP_DEV}p2"</code></pre>
+                    </div>
+                </div>
+
+                <!-- Step B -->
+                <div class="glass-card p-6 rounded-2xl border border-white/10 space-y-3">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span class="text-satsuma-500 font-mono">2.</span> Instalacja Pacstrap & Wprowadzenie do Chroot
+                    </h3>
+                    <div class="bg-dark-bg p-4 rounded-xl border border-white/5 font-mono text-xs text-gray-300 space-y-2 relative group">
+                        <button onclick="copyCode(this, `sudo mount \"${LOOP_DEV}p2\" /mnt\nsudo mkdir -p /mnt/boot && sudo mount \"${LOOP_DEV}p1\" /mnt/boot\nsudo pacstrap /mnt base linux linux-firmware base-devel plasma sddm networkmanager firefox plymouth plymouth-kcm sudo git parted e2fsprogs syslinux\nsudo genfstab -U /mnt | sudo tee /mnt/etc/fstab\nsudo arch-chroot /mnt`)" class="absolute top-3 right-3 text-gray-500 hover:text-satsuma-400">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
+                        <pre><code>sudo mount "${LOOP_DEV}p2" /mnt
+sudo mkdir -p /mnt/boot && sudo mount "${LOOP_DEV}p1" /mnt/boot
+sudo pacstrap /mnt base linux linux-firmware base-devel plasma sddm networkmanager firefox plymouth plymouth-kcm sudo git parted e2fsprogs syslinux
+sudo genfstab -U /mnt | sudo tee /mnt/etc/fstab
+sudo arch-chroot /mnt</code></pre>
+                    </div>
+                </div>
+
+                <!-- Step C -->
+                <div class="glass-card p-6 rounded-2xl border border-white/10 space-y-3">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span class="text-satsuma-500 font-mono">3.</span> Konfiguracja Użytkownika, Bootloadera & Skryptu Auto-Resize
+                    </h3>
+                    <div class="bg-dark-bg p-4 rounded-xl border border-white/5 font-mono text-xs text-gray-300 space-y-2 relative group">
+                        <button onclick="copyCode(this, `# W chroot: Tworzenie uzytkownika\nuseradd -m -G wheel -s /bin/bash twojanazwa\npasswd twojanazwa\necho \"%wheel ALL=(ALL:ALL) ALL\" > /etc/sudoers.d/wheel\n\n# Skrypt resize-rootfs.sh\ncat << 'EOF' > /usr/local/bin/resize-rootfs.sh\n#!/bin/bash\nROOT_PART=$(findmnt / -o SOURCE -n)\nDISK_DEV=$(lsblk -no pkname \"$ROOT_PART\")\nif [ -n \"$DISK_DEV\" ]; then\n    parted -s \"/dev/$DISK_DEV\" resizepart 1 100%\n    resize2fs \"$ROOT_PART\"\n    systemctl disable resize-rootfs.service\n    rm /usr/local/bin/resize-rootfs.sh\nfi\nEOF\nchmod +x /usr/local/bin/resize-rootfs.sh`)" class="absolute top-3 right-3 text-gray-500 hover:text-satsuma-400">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
+                        <pre><code># Tworzenie wybranego użytkownika
+useradd -m -G wheel -s /bin/bash twojanazwa
+passwd twojanazwa
+echo "%wheel ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel
+
+# Skrypt auto-resize dysku
+cat << 'EOF' > /usr/local/bin/resize-rootfs.sh
+#!/bin/bash
+ROOT_PART=$(findmnt / -o SOURCE -n)
+DISK_DEV=$(lsblk -no pkname "$ROOT_PART")
+if [ -n "$DISK_DEV" ]; then
+    parted -s "/dev/$DISK_DEV" resizepart 1 100%
+    resize2fs "$ROOT_PART"
+    systemctl disable resize-rootfs.service
+    rm /usr/local/bin/resize-rootfs.sh
+fi
+EOF
+chmod +x /usr/local/bin/resize-rootfs.sh</code></pre>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FAQ Section (Accordion) -->
+    <section id="faq" class="py-24 px-6">
+        <div class="max-w-4xl mx-auto">
+            
+            <div class="text-center mb-16">
+                <span class="text-xs font-mono text-satsuma-400 font-bold uppercase tracking-widest">Najczęściej zadawane pytania</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white mt-2">Często Zadawane Pytania</h2>
+            </div>
+
+            <div class="space-y-4">
+                
+                <!-- FAQ Item 1 -->
+                <div class="glass-card rounded-2xl border border-white/10 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full p-6 text-left font-bold text-lg text-white flex justify-between items-center gap-4 hover:text-satsuma-400 transition">
+                        <span>Jakie są domyślne dane logowania do systemu?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-satsuma-400 transition duration-300 shrink-0"></i>
+                    </button>
+                    <div class="px-6 pb-6 text-sm text-gray-300 hidden leading-relaxed border-t border-white/5 pt-4">
+                        W prekompilowanym obrazie domyślny użytkownik to <code class="text-satsuma-400 font-mono">satsumapl</code> z hasłem <code class="text-satsuma-400 font-mono">1234</code>. Użytkownik posiada pełne uprawnienia <code class="font-mono">sudo</code>. Jeśli kompilujesz system samemu ze źródeł, dane ustalasz podczas procedury `useradd`.
+                    </div>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="glass-card rounded-2xl border border-white/10 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full p-6 text-left font-bold text-lg text-white flex justify-between items-center gap-4 hover:text-satsuma-400 transition">
+                        <span>Jak dokładnie działa automatyczne skalowanie dysku (Auto-Resize)?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-satsuma-400 transition duration-300 shrink-0"></i>
+                    </button>
+                    <div class="px-6 pb-6 text-sm text-gray-300 hidden leading-relaxed border-t border-white/5 pt-4">
+                        W tle dodana jest usługa systemd `resize-rootfs.service`. Przy pierwszym starcie komputera po przełożeniu dysku SSD usługa uruchamia narzędzie `parted` oraz `resize2fs`, rozszerzając partycję główną root do 100% dostępnej przestrzeni fizycznej dysku, a następnie samoczynnie się wyłącza i usuwa.
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="glass-card rounded-2xl border border-white/10 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full p-6 text-left font-bold text-lg text-white flex justify-between items-center gap-4 hover:text-satsuma-400 transition">
+                        <span>Czy Secure Boot musi być wyłączony w BIOS/UEFI?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-satsuma-400 transition duration-300 shrink-0"></i>
+                    </button>
+                    <div class="px-6 pb-6 text-sm text-gray-300 hidden leading-relaxed border-t border-white/5 pt-4">
+                        Tak. Jak w większości standardowych dystrybucji Arch Linux, opcja **Secure Boot** w ustawieniach BIOS/UEFI musi być wyłączona, aby umożliwić rozruch bootloadera Syslinux.
+                    </div>
+                </div>
+
+                <!-- FAQ Item 4 -->
+                <div class="glass-card rounded-2xl border border-white/10 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full p-6 text-left font-bold text-lg text-white flex justify-between items-center gap-4 hover:text-satsuma-400 transition">
+                        <span>Czy mogę aktualizować system standardowo przez Pacman?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-satsuma-400 transition duration-300 shrink-0"></i>
+                    </button>
+                    <div class="px-6 pb-6 text-sm text-gray-300 hidden leading-relaxed border-t border-white/5 pt-4">
+                        Oczywiście! SatsumaOS korzysta z oficjalnych repozytoriów Arch Linuksa. Możesz w każdej chwili wykonać pełną aktualizację wpisując <code class="text-satsuma-400 font-mono">sudo pacman -Syu</code> lub używając <code class="text-satsuma-400 font-mono">yay</code>.
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t border-white/10 bg-dark-bg/80 text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+            
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🍊</span>
+                <div>
+                    <span class="font-bold text-gray-300 text-sm block">SatsumaOS Linux</span>
+                    <span>Wszelkie prawa zastrzeżone © 2026</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6 text-gray-400">
+                <a href="#about" class="hover:text-satsuma-400 transition">O systemie</a>
+                <a href="#features" class="hover:text-satsuma-400 transition">Funkcje</a>
+                <a href="#installation" class="hover:text-satsuma-400 transition">Instalacja</a>
+                <a href="https://github.com" target="_blank" class="hover:text-satsuma-400 transition">GitHub</a>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-satsuma-500 text-white px-5 py-3 rounded-2xl shadow-satsuma-glow text-xs font-bold flex items-center gap-2 transition duration-300 transform translate-y-20 opacity-0 pointer-events-none">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        <span id="toastMsg">Skopiowano kod!</span>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Init Lucide Icons
+        lucide.createIcons();
+
+        // Switch Installation Tabs
+        function switchTab(type) {
+            const btnQuick = document.getElementById('btnTabQuick');
+            const btnSource = document.getElementById('btnTabSource');
+            const contentQuick = document.getElementById('tabQuickContent');
+            const contentSource = document.getElementById('tabSourceContent');
+
+            if (type === 'quick') {
+                btnQuick.className = "px-6 py-3 rounded-xl font-bold text-sm transition bg-satsuma-500 text-white shadow-satsuma-glow";
+                btnSource.className = "px-6 py-3 rounded-xl font-bold text-sm text-gray-400 hover:text-white transition";
+                contentQuick.classList.remove('hidden');
+                contentSource.classList.add('hidden');
+            } else {
+                btnSource.className = "px-6 py-3 rounded-xl font-bold text-sm transition bg-satsuma-500 text-white shadow-satsuma-glow";
+                btnQuick.className = "px-6 py-3 rounded-xl font-bold text-sm text-gray-400 hover:text-white transition";
+                contentSource.classList.remove('hidden');
+                contentQuick.classList.add('hidden');
+            }
+        }
+
+        // Accordion FAQ Toggle
+        function toggleFaq(btn) {
+            const content = btn.nextElementSibling;
+            const icon = btn.querySelector('[data-lucide="chevron-down"]');
+            
+            content.classList.toggle('hidden');
+            if (icon) {
+                icon.classList.toggle('rotate-180');
+            }
+        }
+
+        // Copy Code Function
+        function copyCode(btnElement, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Skopiowano polecenie do schowka!");
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast("Skopiowano polecenie do schowka!");
+            });
+        }
+
+        // Toast Helper
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
